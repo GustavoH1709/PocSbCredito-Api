@@ -1,0 +1,3 @@
+dotnet ef migrations add [NOME DA MIGRATION] --project PocSbCredito.Infrastructure --startup-project PocSbCredito.API
+
+dotnet ef database update --project PocSbCredito.Infrastructure --startup-project PocSbCredito.API

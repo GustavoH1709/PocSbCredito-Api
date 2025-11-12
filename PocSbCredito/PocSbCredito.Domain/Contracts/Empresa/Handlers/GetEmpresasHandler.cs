@@ -13,7 +13,7 @@ namespace PocSbCredito.Domain.Contracts.Empresa.Handlers
             ObjectResponse<List<GetEmpresasResult>> result = new([]);
 
             var empresas = await empresaQuery.GetAsync(request.Nome, request.Cnpj, request.Email, request.StRegistro);
-            var mappedEmpresas = empresas.Select(x => new GetEmpresasResult(x.Nome, x.Cnpj, x.Email, x.ValorLimiteCredito, x.StRegistro)).ToList();
+            var mappedEmpresas = empresas.Select(x => new GetEmpresasResult(x.Id, x.Nome, x.Cnpj, x.Email, x.ValorLimiteCredito, x.StRegistro)).ToList();
 
             result.Value = mappedEmpresas;
 

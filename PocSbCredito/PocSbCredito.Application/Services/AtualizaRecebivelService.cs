@@ -14,6 +14,7 @@ namespace PocSbCredito.Application.Services
             decimal totalAntecipado = 0;
             int somaDias = 0;
 
+            // Percorre cada recebível para calcular valores e prazos
             foreach (var rec in recebiveis)
             {
                 var dias = (rec.DataVencimento - DateTime.Today).Days;

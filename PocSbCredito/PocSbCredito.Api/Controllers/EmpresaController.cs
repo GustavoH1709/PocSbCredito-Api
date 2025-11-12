@@ -11,7 +11,7 @@ namespace PocSbCredito.Api.Controllers
     [Route("[controller]")]
     public class EmpresaController(IMediator mediator) : ControllerBase
     {
-        [HttpGet]
+        [HttpGet("listarEmpresas")]
         public async Task<ObjectResponse<List<GetEmpresasResult>>> Get([FromQuery] GetEmpresasRequest request) => await mediator.Send(request);
 
         [HttpPost]

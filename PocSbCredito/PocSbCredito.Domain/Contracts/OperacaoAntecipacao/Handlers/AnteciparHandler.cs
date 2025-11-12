@@ -24,6 +24,13 @@ namespace PocSbCredito.Domain.Contracts.OperacaoAntecipacao.Handlers
 
             List<TB_Recebivel> recebiveis = await unitOfWork.Repository.GetListAsync<TB_Recebivel>(item => command.Recebiveis.Contains(item.Id) && item.StatusRecebivel == StatusRecebivel.Disponivel, cancellationToken);
 
+            // Se nenhum recebível foi encontrado ou está disponível, retorna erro
+            if (recebiveis.Count == 0)
+            {
+                //TODO - CRIAR NOTIFICACAO DE VALIDACAO
+                return result;
+            }
+
             using var t = unitOfWork.BeginTransaction();
 
             AtualizacaoRecebivel_DTO? att = await atualizaRecebivelService.HandleAsync(recebiveis, command.TaxaMensal, cancellationToken);
@@ -32,15 +39,19 @@ namespace PocSbCredito.Domain.Contracts.OperacaoAntecipacao.Handlers
 
             int diasMedios = att.SomaDias / recebiveis.Count;
 
-            var pendentes = await unitOfWork.Repository.GetListAsync<TB_OperacaoAntecipacao>(o => o.EmpresaId == o.EmpresaId && o.StatusOperacao == StatusOperacao.Pendente, cancellationToken);
-            decimal totalAntecipadoEmAberto = pendentes.Sum(item => item.ValorTotalAntecipado);
-
-            var limiteRestante = empresa.ValorLimiteCredito - totalAntecipadoEmAberto;
-
-            if (att.TotalAntecipado > limiteRestante)
+            // Verificar se a empresa ainda tem limite de crédito suficiente
+            if (empresa.ValorLimiteCredito is not null)
             {
-                //TODO - CRIAR NOTIFICACAO DE VALIDACAO
-                return result;
+                var pendentes = await unitOfWork.Repository.GetListAsync<TB_OperacaoAntecipacao>(o => o.EmpresaId == o.EmpresaId && o.StatusOperacao == StatusOperacao.Pendente, cancellationToken);
+                decimal totalAntecipadoEmAberto = pendentes.Sum(item => item.ValorTotalAntecipado);
+
+                var limiteRestante = empresa.ValorLimiteCredito.Value - totalAntecipadoEmAberto;
+
+                if (att.TotalAntecipado > limiteRestante)
+                {
+                    //TODO - CRIAR NOTIFICACAO DE VALIDACAO
+                    return result;
+                }
             }
 
             TB_OperacaoAntecipacao tB_OperacaoAntecipacao = new()

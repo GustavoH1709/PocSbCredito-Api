@@ -6,6 +6,7 @@ using PocSbCredito.Shared.Models;
 
 namespace PocSbCredito.Api.Controllers
 {
+    [Route("[controller]")]
     public class FundoFIDCController(IMediator mediator) : ControllerBase
     {
         [HttpGet("listarFundos")]

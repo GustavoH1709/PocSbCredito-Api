@@ -25,9 +25,22 @@ public class Program
         builder.Services.AddDomain();
         builder.Services.AddApplication();
 
+        builder.Services.AddScoped<IDbSeeder, DbSeeder>();
+
         builder.Services.AddControllers().AddJsonOptions(options =>
         {
             options.JsonSerializerOptions.PropertyNamingPolicy = null; // Desativa a conversão camelCase
+        });
+
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAllPolicy",
+                builder =>
+                {
+                    builder.AllowAnyOrigin()
+                           .AllowAnyMethod()
+                           .AllowAnyHeader();
+                });
         });
 
         var app = builder.Build();
@@ -44,10 +57,14 @@ public class Program
         using (IServiceScope scope = app.Services.CreateScope())
         {
             AppDbContext db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            IDbSeeder seeder = scope.ServiceProvider.GetRequiredService<IDbSeeder>();
+
             db.Database.Migrate(); // Aplica as migrations pendentes
+
+            seeder.Seed();
         }
 
-        app.UseCors("AllowAll");
+        app.UseCors("AllowAllPolicy");
         app.MapControllers();
 
         app.Run();
